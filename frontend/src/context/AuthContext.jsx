@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from "react";
-import { loginUser, registerUser } from "../services/authApi";
+import { fetchMe, loginUser, registerUser } from "../services/authApi";
 
 const AuthContext = createContext(null);
 
@@ -26,6 +26,29 @@ export function AuthProvider({ children }) {
     }
   }, [user]);
 
+  // The account always comes from the server (/auth/me), never from the copy cached in localStorage.
+  // `ready` stays false until that check finishes, so no page renders with stale data.
+  const [ready, setReady] = useState(!token);
+
+  useEffect(() => {
+    if (!token) {
+      setReady(true);
+      return;
+    }
+    let cancelled = false;
+    fetchMe()
+      .then((data) => {
+        if (!cancelled) setUser(data.user);
+      })
+      .catch(() => {}) // a 401 is already handled by the shared request helper
+      .finally(() => {
+        if (!cancelled) setReady(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [token]);
+
   const login = async (email, password) => {
     const data = await loginUser(email, password);
     setToken(data.token);
@@ -44,7 +67,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ token, user, login, register, logout }}>
+    <AuthContext.Provider value={{ token, user, ready, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );

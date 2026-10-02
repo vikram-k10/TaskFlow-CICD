@@ -1,3 +1,5 @@
+import { request } from "./api";
+
 const API_URL = import.meta.env.VITE_API_URL;
 
 export const registerUser = async (name, email, password) => {
@@ -21,3 +23,6 @@ export const loginUser = async (email, password) => {
   if (!res.ok) throw new Error(data.error || "Login failed");
   return data;
 };
+
+// Current user (includes the role). Uses the shared helper because it needs the token.
+export const fetchMe = () => request("/auth/me");
