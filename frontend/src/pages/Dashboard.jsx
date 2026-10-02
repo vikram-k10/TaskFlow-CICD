@@ -33,7 +33,7 @@ export default function Dashboard() {
     <>
       <div className="page-header">
         <div>
-          <h1>Welcome back, {firstName}👋</h1>
+          <h1>Welcome back, {firstName}</h1>
           <p className="page-subtitle">
             {showLead || !showMine
               ? "Here is how your workspaces and tasks are going."
